@@ -16,7 +16,7 @@ Halo! Terima kasih telah tertarik untuk berkontribusi ke proyek **CardifyAi**. D
   ```
 5. Push ke branch kamu:
    ```bash
-  git push origin fitur/nama-fitur-baru
+   git push origin fitur/nama-fitur-baru
    ```
 6. Buat Pull Request (PR) ke repositori utama dengan deskripsi perubahan yang jelas.
 a. Pedoman Kode
