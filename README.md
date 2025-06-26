@@ -24,7 +24,7 @@ CardifyAi adalah aplikasi mobile pembelajaran berbasis flashcard yang memadukan 
 
 ### Frontend
 
-- **Framework**: React Native + TypeScript
+- **Framework**: React Native CLI + TypeScript
 - **Navigasi**: @react-navigation/native
 - **Database Lokal**: SQLite
 - **OCR**: tesseract.js
@@ -39,6 +39,8 @@ CardifyAi adalah aplikasi mobile pembelajaran berbasis flashcard yang memadukan 
 - **OCR Service**: Tesseract.js
 
 ## 📁 Struktur Proyek
+
+```
 
 /src
 /components      # Komponen UI
@@ -58,20 +60,24 @@ CardifyAi adalah aplikasi mobile pembelajaran berbasis flashcard yang memadukan 
 /config          # DB config, env
 server.js        # Entry point
 
+````
 
 ## ⚙️ Instalasi
 
-### Frontend (React Native)
+### Frontend (React Native CLI)
 
 ```bash
 # Instal dependensi
 npm install
 
-# Jalankan di Android
-npm run android
+# Jalankan Metro bundler
+npx react-native start
 
-# Jalankan di iOS
-npm run ios
+# Build & run di Android
+npx react-native run-android
+
+# Build & run di iOS (macOS only)
+npx react-native run-ios
 ````
 
 ### Backend (Node.js)
@@ -92,8 +98,8 @@ npm start
 
 * @react-navigation/native
 * react-native-sqlite-storage
-* expo-document-picker
-* expo-image-picker
+* react-native-document-picker
+* react-native-image-picker
 * tesseract.js
 * lottie-react-native
 * react-native-reanimated
@@ -159,14 +165,14 @@ npm start
 
 ## 📝 Catatan Pengembangan
 
-* Gunakan `.env` untuk kunci API dan config rahasia
-* Pastikan izin kamera/penyimpanan diset di Android/iOS
-* Semua request ke backend harus pakai token
-* Gunakan SecureStore/AsyncStorage untuk token
+* Gunakan file `.env` untuk menyimpan API key & konfigurasi rahasia
+* Pastikan izin kamera dan penyimpanan dikonfigurasi di Android/iOS
+* Gunakan token autentikasi untuk semua request ke backend
+* Simpan token secara aman dengan SecureStore / AsyncStorage
 
 ## 🤝 Kontribusi
 
-Lihat file `CONTRIBUTING.md` untuk panduan kontribusi.
+Lihat `CONTRIBUTING.md` untuk panduan kontribusi.
 
 ## 📄 Lisensi
 
