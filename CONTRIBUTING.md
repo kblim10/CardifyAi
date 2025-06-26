@@ -1,6 +1,6 @@
-# Panduan Kontribusi untuk FlashSmart
+# Panduan Kontribusi untuk CardifyAi
 
-Halo! Terima kasih telah tertarik untuk berkontribusi ke proyek **FlashSmart**. Dengan kontribusi kamu, kami bisa membuat aplikasi pembelajaran berbasis flashcard ini menjadi lebih baik dan bermanfaat bagi banyak orang.
+Halo! Terima kasih telah tertarik untuk berkontribusi ke proyek **CardifyAi**. Dengan kontribusi kamu, kami bisa membuat aplikasi pembelajaran berbasis flashcard ini menjadi lebih baik dan bermanfaat bagi banyak orang.
 
 ## Cara Berkontribusi
 
@@ -15,9 +15,9 @@ Halo! Terima kasih telah tertarik untuk berkontribusi ke proyek **FlashSmart**. 
   git commit -m "Tambah: Tombol tema gelap di pengaturan"
   ```
 5. Push ke branch kamu:
-```bash
+   ```bash
   git push origin fitur/nama-fitur-baru
-```
+   ```
 6. Buat Pull Request (PR) ke repositori utama dengan deskripsi perubahan yang jelas.
 a. Pedoman Kode
 - Pastikan kode bersih, terdokumentasi, dan mudah dibaca.
@@ -27,9 +27,9 @@ a. Pedoman Kode
 b. Testing
 - Jika kamu menambahkan fitur baru, pastikan menulis unit test jika memungkinkan.
 - Jalankan linting dan pastikan tidak ada error:
-```bash
+   ```bash
   npm run lint
-```
+   ```
 c. Pelaporan Masalah
 Jika kamu menemukan bug atau punya ide untuk fitur baru, silakan buka issue di repositori ini. Sertakan detail seperti:
 - Deskripsi masalah/ide
