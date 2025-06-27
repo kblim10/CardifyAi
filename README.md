@@ -41,7 +41,6 @@ CardifyAi adalah aplikasi mobile pembelajaran berbasis flashcard yang memadukan 
 ## 📁 Struktur Proyek
 
 ```
-
 /src
 /components      # Komponen UI
 /screens         # Halaman aplikasi
@@ -59,8 +58,7 @@ CardifyAi adalah aplikasi mobile pembelajaran berbasis flashcard yang memadukan 
 /utils           # Helpers
 /config          # DB config, env
 server.js        # Entry point
-
-````
+```
 
 ## ⚙️ Instalasi
 
@@ -78,7 +76,7 @@ npx react-native run-android
 
 # Build & run di iOS (macOS only)
 npx react-native run-ios
-````
+```
 
 ### Backend (Node.js)
 
@@ -122,7 +120,7 @@ npm start
 * `description`: String (opsional)
 * `coverImagePath`: String (opsional)
 * `isPublic`: Boolean
-* `tags`: String\[] (opsional)
+* `tags`: String[] (opsional)
 * `createdAt`: Date
 * `updatedAt`: Date
 
@@ -132,7 +130,7 @@ npm start
 * `deckId`: String
 * `frontContent`: String
 * `backContent`: String
-* `tags`: String\[] (opsional)
+* `tags`: String[] (opsional)
 * `mediaPath`: String (opsional)
 * `srsData`: CardReviewData
 * `createdAt`: Date
