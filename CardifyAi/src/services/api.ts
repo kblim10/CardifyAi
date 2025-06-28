@@ -31,6 +31,22 @@ api.interceptors.request.use(
   }
 );
 
+const register = async (name: string, email: string, password: string) => {
+  console.log('Mencoba registrasi dengan:', { name, email, password });
+  try {
+    const response = await axios.post('/api/auth/register', {
+      name,
+      email,
+      password,
+    });
+    console.log('Registrasi berhasil:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Registrasi gagal:', error);
+    throw error;
+  }
+};
+
 // Auth API
 export const authAPI = {
   login: (email: string, password: string) => {

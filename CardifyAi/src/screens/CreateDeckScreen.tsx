@@ -19,6 +19,7 @@ import { storage } from '../services/storage';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { v4 as uuidv4 } from 'uuid';
+import { showSafeErrorAlert } from '../utils/helpers';
 
 type CreateDeckScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateDeck'>;
 
@@ -66,7 +67,7 @@ const CreateDeckScreen: React.FC<CreateDeckScreenProps> = ({ route, navigation }
       }
     } catch (error) {
       console.error('Error choosing image:', error);
-      Alert.alert('Error', 'Gagal memilih gambar');
+      showSafeErrorAlert('Error', 'Gagal memilih gambar');
     }
   };
 
@@ -171,11 +172,13 @@ const CreateDeckScreen: React.FC<CreateDeckScreenProps> = ({ route, navigation }
         navigation.navigate('Main');
       }
       
-      Alert.alert('Sukses', 'Deck berhasil dibuat');
+      showSafeErrorAlert('Sukses', 'Deck berhasil dibuat', () => {
+        navigation.goBack();
+      });
       
     } catch (error) {
       console.error('Error creating deck:', error);
-      Alert.alert('Error', 'Gagal membuat deck');
+      showSafeErrorAlert('Error', 'Gagal membuat deck');
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-import { Dimensions, Platform } from 'react-native';
+import { Dimensions, Platform, Alert, InteractionManager } from 'react-native';
 
 // Get screen dimensions
 export const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -275,4 +275,64 @@ export const isEmpty = (str: string): boolean => {
 // Check if object is empty
 export const isEmptyObject = (obj: object): boolean => {
   return Object.keys(obj).length === 0;
+};
+
+/**
+ * Safely show an alert by ensuring the app is ready
+ * This prevents "Tried to show an alert while not attached to an Activity" error
+ */
+export const showSafeAlert = (
+  title: string,
+  message: string,
+  buttons?: Array<{
+    text: string;
+    style?: 'default' | 'cancel' | 'destructive';
+    onPress?: () => void;
+  }>
+) => {
+  InteractionManager.runAfterInteractions(() => {
+    requestAnimationFrame(() => {
+      Alert.alert(title, message, buttons);
+    });
+  });
+};
+
+/**
+ * Safely show a confirmation dialog
+ */
+export const showSafeConfirmation = (
+  title: string,
+  message: string,
+  onConfirm: () => void,
+  onCancel?: () => void
+) => {
+  showSafeAlert(title, message, [
+    {
+      text: 'Batal',
+      style: 'cancel',
+      onPress: onCancel,
+    },
+    {
+      text: 'OK',
+      style: 'destructive',
+      onPress: onConfirm,
+    },
+  ]);
+};
+
+/**
+ * Safely show an error alert
+ */
+export const showSafeErrorAlert = (
+  title: string,
+  message: string,
+  onPress?: () => void
+) => {
+  showSafeAlert(title, message, [
+    {
+      text: 'OK',
+      style: 'default',
+      onPress,
+    },
+  ]);
 }; 

@@ -5,48 +5,26 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Image,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import Input from '../components/Input';
-import Button from '../components/Button';
-import { cardsAPI } from '../services/api';
-import { storage } from '../services/storage';
+import { MainStackParamList } from '../types';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { v4 as uuidv4 } from 'uuid';
+import Button from '../components/Button';
+import Input from '../components/Input';
+import { showSafeErrorAlert } from '../utils/helpers';
+import { storage } from '../services/storage';
+import { Card } from '../services/srs';
 
-type CreateCardScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateCard'>;
+type CreateCardScreenProps = NativeStackScreenProps<MainStackParamList, 'CreateCard'>;
 
-const CreateCardScreen: React.FC<CreateCardScreenProps> = ({ route, navigation }) => {
-  const { deckId } = route.params;
-  
+const CreateCardScreen: React.FC<CreateCardScreenProps> = ({ navigation, route }) => {
   const [frontContent, setFrontContent] = useState('');
   const [backContent, setBackContent] = useState('');
-  const [mediaPath, setMediaPath] = useState<string | null>(null);
+  const [tags, setTags] = useState('');
+  const [imagePath, setImagePath] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ frontContent?: string; backContent?: string }>({});
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  const validate = () => {
-    const newErrors: { frontContent?: string; backContent?: string } = {};
-    let isValid = true;
-
-    if (!frontContent || frontContent.trim() === '') {
-      newErrors.frontContent = 'Konten depan kartu harus diisi';
-      isValid = false;
-    }
-
-    if (!backContent || backContent.trim() === '') {
-      newErrors.backContent = 'Konten belakang kartu harus diisi';
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
 
   const handleTakePhoto = async () => {
     try {
@@ -56,11 +34,11 @@ const CreateCardScreen: React.FC<CreateCardScreenProps> = ({ route, navigation }
       });
 
       if (result.assets && result.assets.length > 0 && result.assets[0].uri) {
-        setMediaPath(result.assets[0].uri);
+        setImagePath(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error taking photo:', error);
-      Alert.alert('Error', 'Gagal mengambil foto');
+      showSafeErrorAlert('Error', 'Gagal mengambil foto');
     }
   };
 
@@ -72,155 +50,122 @@ const CreateCardScreen: React.FC<CreateCardScreenProps> = ({ route, navigation }
       });
 
       if (result.assets && result.assets.length > 0 && result.assets[0].uri) {
-        setMediaPath(result.assets[0].uri);
+        setImagePath(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error choosing image:', error);
-      Alert.alert('Error', 'Gagal memilih gambar');
+      showSafeErrorAlert('Error', 'Gagal memilih gambar');
     }
   };
 
   const handleCreateCard = async () => {
-    if (!validate()) return;
+    if (!frontContent.trim() || !backContent.trim()) {
+      showSafeErrorAlert('Error', 'Front dan back content harus diisi');
+      return;
+    }
+
+    const deckId = route.params?.deckId;
+    if (!deckId) {
+      showSafeErrorAlert('Error', 'Deck ID tidak ditemukan');
+      return;
+    }
 
     setLoading(true);
     try {
-      // Create card data
-      const cardData = {
-        deckId,
-        frontContent,
-        backContent,
-        mediaPath: mediaPath || undefined,
+      const card: Card = {
+        id: Date.now().toString(),
+        deckId: deckId,
+        frontContent: frontContent.trim(),
+        backContent: backContent.trim(),
+        mediaPath: imagePath || undefined,
+        tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        srsData: {
+          easeFactor: 2.5,
+          interval: 0,
+          repetitions: 0,
+          dueDate: new Date(),
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      try {
-        // Try to create on server
-        const response = await cardsAPI.createCard(cardData);
-        const newCard = response.data.data;
-        
-        // Save to local storage
-        await storage.saveCards([newCard]);
-      } catch (apiError) {
-        console.log('Failed to create card on server, saving locally', apiError);
-        
-        // If API fails, save locally
-        const now = new Date();
-        const localCard = {
-          id: uuidv4(),
-          deckId,
-          frontContent,
-          backContent,
-          mediaPath: mediaPath || undefined,
-          srsData: {
-            easeFactor: 2.5,
-            interval: 0,
-            repetitions: 0,
-            dueDate: now,
-          },
-          createdAt: now,
-          updatedAt: now,
-        };
-        
-        await storage.saveCards([localCard]);
-      }
-      
-      Alert.alert('Sukses', 'Kartu berhasil dibuat', [
-        {
-          text: 'Tambah Lagi',
-          onPress: () => {
-            setFrontContent('');
-            setBackContent('');
-            setMediaPath(null);
-            setIsFlipped(false);
-          },
-        },
-        {
-          text: 'Kembali',
-          onPress: () => navigation.goBack(),
-        },
-      ]);
+      // Save card to local storage
+      await storage.saveCards([card]);
+
+      showSafeErrorAlert('Sukses', 'Kartu berhasil dibuat', () => {
+        navigation.goBack();
+      });
     } catch (error) {
       console.error('Error creating card:', error);
-      Alert.alert('Error', 'Gagal membuat kartu');
+      showSafeErrorAlert('Error', 'Gagal membuat kartu');
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.previewContainer}>
-        <TouchableOpacity style={styles.cardPreview} onPress={toggleFlip} activeOpacity={0.8}>
-          <View style={[styles.cardFace, !isFlipped ? styles.cardFront : styles.cardBack]}>
-            {!isFlipped ? (
-              <>
-                {mediaPath && (
-                  <Image source={{ uri: mediaPath }} style={styles.cardMedia} resizeMode="contain" />
-                )}
-                <Text style={styles.cardContent}>{frontContent || 'Konten Depan'}</Text>
-              </>
-            ) : (
-              <Text style={styles.cardContent}>{backContent || 'Konten Belakang'}</Text>
-            )}
-          </View>
-          <Text style={styles.flipHint}>Tap untuk membalik</Text>
-        </TouchableOpacity>
+      <View style={styles.header}>
+        <Text style={styles.title}>Buat Kartu Baru</Text>
+        <Text style={styles.subtitle}>
+          Buat kartu flashcard baru untuk deck Anda
+        </Text>
       </View>
 
-      <View style={styles.formContainer}>
-        <Text style={styles.sectionTitle}>Konten Kartu</Text>
-        
+      <View style={styles.form}>
         <Input
-          label="Depan"
-          placeholder="Masukkan konten depan kartu"
+          label="Front Content"
           value={frontContent}
           onChangeText={setFrontContent}
+          placeholder="Masukkan pertanyaan atau kata kunci"
           multiline
           numberOfLines={3}
-          error={errors.frontContent}
         />
-        
+
         <Input
-          label="Belakang"
-          placeholder="Masukkan konten belakang kartu"
+          label="Back Content"
           value={backContent}
           onChangeText={setBackContent}
+          placeholder="Masukkan jawaban atau definisi"
           multiline
           numberOfLines={3}
-          error={errors.backContent}
         />
-        
-        <Text style={styles.sectionTitle}>Media (Opsional)</Text>
-        
-        <View style={styles.mediaOptionsContainer}>
-          <TouchableOpacity style={styles.mediaOption} onPress={handleTakePhoto}>
-            <Icon name="camera" size={24} color="#6200EE" />
-            <Text style={styles.mediaOptionText}>Ambil Foto</Text>
-          </TouchableOpacity>
+
+        <Input
+          label="Tags (opsional)"
+          value={tags}
+          onChangeText={setTags}
+          placeholder="Masukkan tags dipisahkan dengan koma"
+        />
+
+        <View style={styles.mediaSection}>
+          <Text style={styles.sectionTitle}>Media (opsional)</Text>
           
-          <TouchableOpacity style={styles.mediaOption} onPress={handleChooseImage}>
-            <Icon name="image" size={24} color="#6200EE" />
-            <Text style={styles.mediaOptionText}>Pilih Gambar</Text>
-          </TouchableOpacity>
-          
-          {mediaPath && (
-            <TouchableOpacity style={styles.mediaOption} onPress={() => setMediaPath(null)}>
-              <Icon name="delete" size={24} color="#FF5252" />
-              <Text style={[styles.mediaOptionText, { color: '#FF5252' }]}>Hapus Media</Text>
+          <View style={styles.mediaButtons}>
+            <TouchableOpacity style={styles.mediaButton} onPress={handleTakePhoto}>
+              <Icon name="camera" size={24} color="#6200EE" />
+              <Text style={styles.mediaButtonText}>Ambil Foto</Text>
             </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.mediaButton} onPress={handleChooseImage}>
+              <Icon name="image" size={24} color="#6200EE" />
+              <Text style={styles.mediaButtonText}>Pilih Gambar</Text>
+            </TouchableOpacity>
+          </View>
+
+          {imagePath && (
+            <View style={styles.imagePreview}>
+              <Image source={{ uri: imagePath }} style={styles.previewImage} />
+              <TouchableOpacity
+                style={styles.removeImageButton}
+                onPress={() => setImagePath(null)}
+              >
+                <Icon name="close" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
           )}
         </View>
-        
-        {mediaPath && (
-          <View style={styles.selectedMediaContainer}>
-            <Image source={{ uri: mediaPath }} style={styles.selectedMedia} resizeMode="contain" />
-          </View>
-        )}
-        
+
         <Button
           title="Buat Kartu"
           onPress={handleCreateCard}
@@ -241,89 +186,73 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 40,
   },
-  previewContainer: {
-    alignItems: 'center',
+  header: {
     marginBottom: 24,
   },
-  cardPreview: {
-    width: '100%',
-    height: 200,
-    alignItems: 'center',
-  },
-  cardFace: {
-    width: '100%',
-    height: '90%',
-    borderRadius: 12,
-    padding: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  cardFront: {
-    backgroundColor: '#FFFFFF',
-  },
-  cardBack: {
-    backgroundColor: '#F0E6FF',
-  },
-  cardMedia: {
-    width: '100%',
-    height: 100,
-    marginBottom: 12,
-    borderRadius: 8,
-  },
-  cardContent: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: '#333333',
-  },
-  flipHint: {
-    marginTop: 8,
-    fontSize: 12,
-    color: '#999999',
-  },
-  formContainer: {
-    width: '100%',
-  },
-  sectionTitle: {
-    fontSize: 18,
+  title: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#333333',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  form: {
+    gap: 16,
+  },
+  mediaSection: {
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
     marginBottom: 12,
   },
-  mediaOptionsContainer: {
+  mediaButtons: {
     flexDirection: 'row',
-    marginBottom: 16,
+    gap: 12,
   },
-  mediaOption: {
+  mediaButton: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 24,
-  },
-  mediaOptionText: {
-    marginTop: 4,
-    fontSize: 12,
-    color: '#6200EE',
-  },
-  selectedMediaContainer: {
-    width: '100%',
-    height: 150,
-    marginBottom: 24,
-    borderRadius: 8,
-    overflow: 'hidden',
+    justifyContent: 'center',
+    padding: 12,
     backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
-  selectedMedia: {
+  mediaButtonText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#333333',
+  },
+  imagePreview: {
+    marginTop: 12,
+    position: 'relative',
+  },
+  previewImage: {
     width: '100%',
-    height: '100%',
+    height: 200,
+    borderRadius: 8,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   createButton: {
-    marginTop: 8,
+    marginTop: 24,
   },
 });
 

@@ -1,4 +1,4 @@
-import { Alert } from 'react-native';
+import { Alert, InteractionManager } from 'react-native';
 import { ERROR_MESSAGES } from '../constants';
 
 // Error types
@@ -107,32 +107,40 @@ class ErrorHandler {
   // Handle network errors
   private handleNetworkError(error: AppError, showAlert: boolean) {
     if (showAlert) {
-      Alert.alert(
-        'Koneksi Error',
-        error.message,
-        [
-          {
-            text: 'OK',
-            style: 'default',
-          },
-        ]
-      );
+      InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => {
+          Alert.alert(
+            'Koneksi Error',
+            error.message,
+            [
+              {
+                text: 'OK',
+                style: 'default',
+              },
+            ]
+          );
+        });
+      });
     }
   }
 
   // Handle authentication errors
   private handleAuthError(error: AppError, showAlert: boolean) {
     if (showAlert) {
-      Alert.alert(
-        'Autentikasi Error',
-        error.message,
-        [
-          {
-            text: 'OK',
-            style: 'default',
-          },
-        ]
-      );
+      InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => {
+          Alert.alert(
+            'Autentikasi Error',
+            error.message,
+            [
+              {
+                text: 'OK',
+                style: 'default',
+              },
+            ]
+          );
+        });
+      });
     }
 
     // You might want to trigger logout here
@@ -149,64 +157,80 @@ class ErrorHandler {
         message = `${message}\n\n${errorDetails}`;
       }
 
-      Alert.alert(
-        'Validasi Error',
-        message,
-        [
-          {
-            text: 'OK',
-            style: 'default',
-          },
-        ]
-      );
+      InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => {
+          Alert.alert(
+            'Validasi Error',
+            message,
+            [
+              {
+                text: 'OK',
+                style: 'default',
+              },
+            ]
+          );
+        });
+      });
     }
   }
 
   // Handle server errors
   private handleServerError(error: AppError, showAlert: boolean) {
     if (showAlert) {
-      Alert.alert(
-        'Server Error',
-        error.message,
-        [
-          {
-            text: 'OK',
-            style: 'default',
-          },
-        ]
-      );
+      InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => {
+          Alert.alert(
+            'Server Error',
+            error.message,
+            [
+              {
+                text: 'OK',
+                style: 'default',
+              },
+            ]
+          );
+        });
+      });
     }
   }
 
   // Handle unknown errors
   private handleUnknownError(error: AppError, showAlert: boolean) {
     if (showAlert) {
-      Alert.alert(
-        'Error',
-        error.message,
-        [
-          {
-            text: 'OK',
-            style: 'default',
-          },
-        ]
-      );
+      InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => {
+          Alert.alert(
+            'Error',
+            error.message,
+            [
+              {
+                text: 'OK',
+                style: 'default',
+              },
+            ]
+          );
+        });
+      });
     }
   }
 
   // Show custom error alert
   showErrorAlert(title: string, message: string, onPress?: () => void) {
-    Alert.alert(
-      title,
-      message,
-      [
-        {
-          text: 'OK',
-          style: 'default',
-          onPress,
-        },
-      ]
-    );
+    InteractionManager.runAfterInteractions(() => {
+      requestAnimationFrame(() => {
+        Alert.alert(
+          title,
+          message,
+          [
+            {
+              text: 'OK',
+              style: 'default',
+              onPress,
+            },
+          ]
+        );
+      });
+    });
   }
 
   // Show confirmation dialog
@@ -216,22 +240,26 @@ class ErrorHandler {
     onConfirm: () => void,
     onCancel?: () => void
   ) {
-    Alert.alert(
-      title,
-      message,
-      [
-        {
-          text: 'Batal',
-          style: 'cancel',
-          onPress: onCancel,
-        },
-        {
-          text: 'OK',
-          style: 'destructive',
-          onPress: onConfirm,
-        },
-      ]
-    );
+    InteractionManager.runAfterInteractions(() => {
+      requestAnimationFrame(() => {
+        Alert.alert(
+          title,
+          message,
+          [
+            {
+              text: 'Batal',
+              style: 'cancel',
+              onPress: onCancel,
+            },
+            {
+              text: 'OK',
+              style: 'destructive',
+              onPress: onConfirm,
+            },
+          ]
+        );
+      });
+    });
   }
 
   // Log error for analytics

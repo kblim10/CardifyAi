@@ -16,6 +16,7 @@ import Button from '../components/Button';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { ocrService } from '../services/ocr';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { showSafeErrorAlert } from '../utils/helpers';
 
 type ScanScreenProps = NativeStackScreenProps<RootStackParamList, 'Scan'>;
 
@@ -39,7 +40,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error taking photo:', error);
-      Alert.alert('Error', 'Gagal mengambil foto');
+      showSafeErrorAlert('Error', 'Gagal mengambil foto');
     }
   };
 
@@ -57,7 +58,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error choosing image:', error);
-      Alert.alert('Error', 'Gagal memilih gambar');
+      showSafeErrorAlert('Error', 'Gagal memilih gambar');
     }
   };
 
@@ -84,7 +85,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
             setFlashcards(cards);
           } catch (ocrError) {
             console.error('OCR error:', ocrError);
-            Alert.alert('Error', 'Gagal memproses dokumen PDF');
+            showSafeErrorAlert('Error', 'Gagal memproses dokumen PDF');
           } finally {
             setLoading(false);
           }
@@ -97,7 +98,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error choosing document:', error);
-      Alert.alert('Error', 'Gagal memilih dokumen');
+      showSafeErrorAlert('Error', 'Gagal memilih dokumen');
     }
   };
 
@@ -114,7 +115,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
       setFlashcards(cards);
     } catch (error) {
       console.error('Error extracting text:', error);
-      Alert.alert('Error', 'Gagal mengekstrak teks');
+      showSafeErrorAlert('Error', 'Gagal mengekstrak teks');
     } finally {
       setLoading(false);
     }
@@ -122,7 +123,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
 
   const handleCreateFlashcards = () => {
     if (flashcards.length === 0) {
-      Alert.alert('Peringatan', 'Tidak ada flashcard yang dapat dibuat');
+      showSafeErrorAlert('Peringatan', 'Tidak ada flashcard yang dapat dibuat');
       return;
     }
 
