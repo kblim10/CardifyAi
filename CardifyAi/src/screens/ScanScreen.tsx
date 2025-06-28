@@ -14,7 +14,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import Button from '../components/Button';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import DocumentPicker from 'react-native-document-picker';
 import { ocrService } from '../services/ocr';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -64,31 +63,41 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
 
   const handleChooseDocument = async () => {
     try {
-      const result = await DocumentPicker.pick({
-        type: [DocumentPicker.types.pdf],
+      const result = await launchImageLibrary({
+        mediaType: 'mixed',
+        quality: 0.8,
+        includeBase64: false,
       });
 
-      if (result[0].uri) {
-        setLoading(true);
-        try {
-          const response = await ocrService.processDocument(result[0].uri);
-          setExtractedText(response.text);
-          
-          // Generate flashcards from text
-          const cards = await ocrService.generateFlashcardsFromText(response.text);
-          setFlashcards(cards);
-        } catch (ocrError) {
-          console.error('OCR error:', ocrError);
-          Alert.alert('Error', 'Gagal memproses dokumen');
-        } finally {
-          setLoading(false);
+      if (result.assets && result.assets.length > 0 && result.assets[0].uri) {
+        const asset = result.assets[0];
+        
+        // Check if it's a PDF file
+        if (asset.type === 'application/pdf' || asset.fileName?.endsWith('.pdf')) {
+          setLoading(true);
+          try {
+            const response = await ocrService.processDocument(asset.uri);
+            setExtractedText(response.text);
+            
+            // Generate flashcards from text
+            const cards = await ocrService.generateFlashcardsFromText(response.text);
+            setFlashcards(cards);
+          } catch (ocrError) {
+            console.error('OCR error:', ocrError);
+            Alert.alert('Error', 'Gagal memproses dokumen PDF');
+          } finally {
+            setLoading(false);
+          }
+        } else {
+          // Handle as image
+          setImagePath(asset.uri);
+          setExtractedText(null);
+          setFlashcards([]);
         }
       }
     } catch (error) {
-      if (!DocumentPicker.isCancel(error)) {
-        console.error('Error choosing document:', error);
-        Alert.alert('Error', 'Gagal memilih dokumen');
-      }
+      console.error('Error choosing document:', error);
+      Alert.alert('Error', 'Gagal memilih dokumen');
     }
   };
 
