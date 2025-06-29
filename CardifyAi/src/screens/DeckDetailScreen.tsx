@@ -29,6 +29,16 @@ const DeckDetailScreen: React.FC<DeckDetailScreenProps> = ({ route, navigation }
   const [dueCardCount, setDueCardCount] = useState(0);
 
   useEffect(() => {
+    // Debug log
+    console.log('DeckDetailScreen received deckId:', deckId);
+    
+    // Check if deckId is valid
+    if (!deckId || deckId === 'undefined') {
+      Alert.alert('Error', 'ID deck tidak valid');
+      navigation.goBack();
+      return;
+    }
+
     loadDeck();
     loadCards();
     

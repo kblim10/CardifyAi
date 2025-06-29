@@ -48,13 +48,25 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     try {
       setLoading(true);
       
+      // Debug: Check if token exists
+      const token = await storage.getToken();
+      console.log('Token exists:', !!token);
+      console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
+      
       // Try to get decks from API
       try {
-        const response = await decksAPI.getUserDecks();
+        // Use public endpoint temporarily for testing
+        const response = await decksAPI.getDecks();
         const apiDecks = response.data.data;
         
         // Save decks to local storage
         await storage.saveDecks(apiDecks);
+        
+        // Debug: Log deck data
+        console.log('API Decks loaded:', apiDecks.length);
+        if (apiDecks.length > 0) {
+          console.log('First deck:', JSON.stringify(apiDecks[0], null, 2));
+        }
         
         // Update state
         setDecks(apiDecks);
@@ -63,6 +75,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         
         // If API fails, load from local storage
         const localDecks = await storage.getDecks();
+        console.log('Local Decks loaded:', localDecks.length);
+        if (localDecks.length > 0) {
+          console.log('First local deck:', JSON.stringify(localDecks[0], null, 2));
+        }
         setDecks(localDecks);
       }
       
@@ -105,6 +121,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const handleDeckPress = (deckId: string) => {
+    console.log('Navigating to DeckDetail with deckId:', deckId);
     navigation.navigate('DeckDetail' as any, { deckId });
   };
 
@@ -267,4 +284,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen; 
+export default HomeScreen;

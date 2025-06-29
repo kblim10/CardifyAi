@@ -16,8 +16,8 @@ export interface Deck {
   coverImagePath?: string;
   isPublic: boolean;
   tags?: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface User {
@@ -26,6 +26,47 @@ export interface User {
   email: string;
   profilePicture?: string;
 }
+
+// Helper function to normalize deck data
+const normalizeDeck = (deck: any): Deck => {
+  return {
+    id: deck.id || deck._id,
+    title: deck.title,
+    description: deck.description,
+    coverImagePath: deck.coverImagePath,
+    isPublic: deck.isPublic,
+    tags: deck.tags,
+    createdAt: typeof deck.createdAt === 'string' ? new Date(deck.createdAt) : (deck.createdAt || new Date()),
+    updatedAt: typeof deck.updatedAt === 'string' ? new Date(deck.updatedAt) : (deck.updatedAt || new Date()),
+  };
+};
+
+// Helper function to normalize card data
+const normalizeCard = (card: any): Card => {
+  return {
+    id: card.id || card._id,
+    deckId: card.deckId,
+    frontContent: card.frontContent,
+    backContent: card.backContent,
+    tags: card.tags,
+    mediaPath: card.mediaPath,
+    srsData: {
+      easeFactor: card.srsData?.easeFactor ?? 2.5,
+      interval: card.srsData?.interval ?? 0,
+      repetitions: card.srsData?.repetitions ?? 0,
+      dueDate: typeof card.srsData?.dueDate === 'string' 
+        ? new Date(card.srsData.dueDate) 
+        : (card.srsData?.dueDate || new Date()),
+      lastReviewedAt: card.srsData?.lastReviewedAt 
+        ? (typeof card.srsData.lastReviewedAt === 'string' 
+            ? new Date(card.srsData.lastReviewedAt) 
+            : card.srsData.lastReviewedAt)
+        : undefined,
+    },
+    createdAt: typeof card.createdAt === 'string' ? new Date(card.createdAt) : (card.createdAt || new Date()),
+    updatedAt: typeof card.updatedAt === 'string' ? new Date(card.updatedAt) : (card.updatedAt || new Date()),
+  };
+};
 
 // Storage service
 export const storage = {
@@ -130,36 +171,48 @@ export const storage = {
 
   // Deck methods
   async saveDecks(decks: Deck[]): Promise<void> {
+    let db: SQLite.SQLiteDatabase | null = null;
     try {
-      const db = await SQLite.openDatabase({
+      db = await SQLite.openDatabase({
         name: DB_NAME,
         location: 'default',
       });
 
-      // Begin transaction
-      await db.transaction(async tx => {
-        for (const deck of decks) {
-          await tx.executeSql(
-            `INSERT OR REPLACE INTO decks (
-              id, title, description, coverImagePath, isPublic, tags, createdAt, updatedAt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              deck.id,
-              deck.title,
-              deck.description || null,
-              deck.coverImagePath || null,
-              deck.isPublic ? 1 : 0,
-              deck.tags ? JSON.stringify(deck.tags) : null,
-              deck.createdAt.toISOString(),
-              deck.updatedAt.toISOString(),
-            ]
-          );
-        }
-      });
-
-      await db.close();
+      // Use executeSql without transaction for simpler operations
+      await db.executeSql('DELETE FROM decks');
+      
+      // Insert all decks one by one
+      for (const deckData of decks) {
+        // Normalize deck data to ensure proper date handling
+        const deck = normalizeDeck(deckData);
+        
+        await db.executeSql(
+          `INSERT INTO decks (
+            id, title, description, coverImagePath, isPublic, tags, createdAt, updatedAt
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            deck.id,
+            deck.title,
+            deck.description || null,
+            deck.coverImagePath || null,
+            deck.isPublic ? 1 : 0,
+            deck.tags ? JSON.stringify(deck.tags) : null,
+            deck.createdAt instanceof Date ? deck.createdAt.toISOString() : deck.createdAt,
+            deck.updatedAt instanceof Date ? deck.updatedAt.toISOString() : deck.updatedAt,
+          ]
+        );
+      }
     } catch (error) {
       console.error('Error saving decks:', error);
+      throw error;
+    } finally {
+      if (db) {
+        try {
+          await db.close();
+        } catch (closeError) {
+          console.error('Error closing database:', closeError);
+        }
+      }
     }
   },
 
@@ -245,43 +298,59 @@ export const storage = {
 
   // Card methods
   async saveCards(cards: Card[]): Promise<void> {
+    let db: SQLite.SQLiteDatabase | null = null;
     try {
-      const db = await SQLite.openDatabase({
+      db = await SQLite.openDatabase({
         name: DB_NAME,
         location: 'default',
       });
 
-      // Begin transaction
-      await db.transaction(async tx => {
-        for (const card of cards) {
-          await tx.executeSql(
-            `INSERT OR REPLACE INTO cards (
-              id, deckId, frontContent, backContent, tags, mediaPath,
-              easeFactor, interval, repetitions, dueDate, lastReviewedAt,
-              createdAt, updatedAt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              card.id,
-              card.deckId,
-              card.frontContent,
-              card.backContent,
-              card.tags ? JSON.stringify(card.tags) : null,
-              card.mediaPath || null,
-              card.srsData.easeFactor,
-              card.srsData.interval,
-              card.srsData.repetitions,
-              card.srsData.dueDate.toISOString(),
-              card.srsData.lastReviewedAt?.toISOString() || null,
-              card.createdAt.toISOString(),
-              card.updatedAt.toISOString(),
-            ]
-          );
-        }
-      });
+      // Use executeSql without transaction for simpler operations
+      await db.executeSql('DELETE FROM cards');
+      
+      // Insert all cards one by one
+      for (const cardData of cards) {
+        // Normalize card data to ensure proper date handling
+        const card = normalizeCard(cardData);
 
-      await db.close();
+        await db.executeSql(
+          `INSERT INTO cards (
+            id, deckId, frontContent, backContent, tags, mediaPath,
+            easeFactor, interval, repetitions, dueDate, lastReviewedAt,
+            createdAt, updatedAt
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            card.id,
+            card.deckId,
+            card.frontContent,
+            card.backContent,
+            card.tags ? JSON.stringify(card.tags) : null,
+            card.mediaPath || null,
+            card.srsData.easeFactor,
+            card.srsData.interval,
+            card.srsData.repetitions,
+            card.srsData.dueDate instanceof Date ? card.srsData.dueDate.toISOString() : card.srsData.dueDate,
+            card.srsData.lastReviewedAt 
+              ? (card.srsData.lastReviewedAt instanceof Date 
+                  ? card.srsData.lastReviewedAt.toISOString() 
+                  : card.srsData.lastReviewedAt)
+              : null,
+            card.createdAt instanceof Date ? card.createdAt.toISOString() : card.createdAt,
+            card.updatedAt instanceof Date ? card.updatedAt.toISOString() : card.updatedAt,
+          ]
+        );
+      }
     } catch (error) {
       console.error('Error saving cards:', error);
+      throw error;
+    } finally {
+      if (db) {
+        try {
+          await db.close();
+        } catch (closeError) {
+          console.error('Error closing database:', closeError);
+        }
+      }
     }
   },
 

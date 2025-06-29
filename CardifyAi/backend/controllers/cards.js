@@ -182,6 +182,14 @@ exports.getDeckCards = async (req, res) => {
   try {
     const { deckId } = req.params;
 
+    // Check if deckId is provided
+    if (!deckId || deckId === 'undefined') {
+      return res.status(400).json({
+        success: false,
+        error: 'ID deck tidak valid',
+      });
+    }
+
     // Check if deck exists and belongs to user
     const deck = await Deck.findById(deckId);
     if (!deck) {
@@ -200,12 +208,22 @@ exports.getDeckCards = async (req, res) => {
 
     const cards = await Card.find({ deckId });
 
+    // Transform _id to id for consistency
+    const transformedCards = cards.map(card => {
+      const cardObj = card.toObject();
+      cardObj.id = cardObj._id;
+      delete cardObj._id;
+      delete cardObj.__v;
+      return cardObj;
+    });
+
     res.status(200).json({
       success: true,
-      count: cards.length,
-      data: cards,
+      count: transformedCards.length,
+      data: transformedCards,
     });
   } catch (err) {
+    console.error('Error in getDeckCards:', err);
     res.status(500).json({
       success: false,
       error: 'Server Error',

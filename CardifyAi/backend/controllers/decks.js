@@ -18,6 +18,15 @@ exports.getDecks = async (req, res) => {
       .limit(limit)
       .sort({ createdAt: -1 });
 
+    // Transform _id to id for consistency
+    const transformedDecks = decks.map(deck => {
+      const deckObj = deck.toObject();
+      deckObj.id = deckObj._id;
+      delete deckObj._id;
+      delete deckObj.__v;
+      return deckObj;
+    });
+
     // Pagination result
     const pagination = {};
 
@@ -37,9 +46,9 @@ exports.getDecks = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      count: decks.length,
+      count: transformedDecks.length,
       pagination,
-      data: decks,
+      data: transformedDecks,
     });
   } catch (err) {
     res.status(500).json({
@@ -54,7 +63,17 @@ exports.getDecks = async (req, res) => {
 // @access  Public
 exports.getDeck = async (req, res) => {
   try {
-    const deck = await Deck.findById(req.params.id);
+    const { id } = req.params;
+
+    // Check if ID is provided
+    if (!id || id === 'undefined') {
+      return res.status(400).json({
+        success: false,
+        error: 'ID deck tidak valid',
+      });
+    }
+
+    const deck = await Deck.findById(id);
 
     if (!deck) {
       return res.status(404).json({
@@ -71,11 +90,18 @@ exports.getDeck = async (req, res) => {
       });
     }
 
+    // Transform _id to id for consistency
+    const deckObj = deck.toObject();
+    deckObj.id = deckObj._id;
+    delete deckObj._id;
+    delete deckObj.__v;
+
     res.status(200).json({
       success: true,
-      data: deck,
+      data: deckObj,
     });
   } catch (err) {
+    console.error('Error in getDeck:', err);
     res.status(500).json({
       success: false,
       error: 'Server Error',

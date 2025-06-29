@@ -10,6 +10,14 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nama, email, dan password harus diisi',
+      });
+    }
+
     // Check if user already exists
     let user = await User.findOne({ email });
 
@@ -29,6 +37,7 @@ exports.register = async (req, res) => {
 
     sendTokenResponse(user, 201, res);
   } catch (err) {
+    console.error('Register error:', err.message);
     res.status(500).json({
       success: false,
       error: 'Server Error',
@@ -237,9 +246,12 @@ const sendTokenResponse = (user, statusCode, res) => {
   // Create token
   const token = user.getSignedJwtToken();
 
+  // Cookie expire time (default 7 days if not set)
+  const cookieExpire = process.env.JWT_COOKIE_EXPIRE || 7;
+  
   const options = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+      Date.now() + cookieExpire * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
   };
@@ -251,5 +263,10 @@ const sendTokenResponse = (user, statusCode, res) => {
   res.status(statusCode).cookie('token', token, options).json({
     success: true,
     token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    },
   });
 }; 

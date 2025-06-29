@@ -18,7 +18,7 @@ import { decksAPI } from '../services/api';
 import { storage } from '../services/storage';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { v4 as uuidv4 } from 'uuid';
+import { generateUUID } from '../utils/uuid';
 import { showSafeErrorAlert } from '../utils/helpers';
 
 type CreateDeckScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateDeck'>;
@@ -101,7 +101,7 @@ const CreateDeckScreen: React.FC<CreateDeckScreenProps> = ({ route, navigation }
       };
 
       // Generate a temporary ID for local storage
-      const tempDeckId = uuidv4();
+      const tempDeckId = generateUUID();
       
       try {
         // Try to create on server
@@ -149,7 +149,7 @@ const CreateDeckScreen: React.FC<CreateDeckScreenProps> = ({ route, navigation }
           const cards = cardPreviews
             .filter(card => card.front.trim() && card.back.trim())
             .map(card => ({
-              id: uuidv4(),
+              id: generateUUID(),
               deckId: tempDeckId,
               frontContent: card.front,
               backContent: card.back,

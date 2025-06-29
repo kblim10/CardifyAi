@@ -29,6 +29,24 @@ if (!fs.existsSync('./uploads')) {
   fs.mkdirSync('./uploads');
 }
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// API Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'API is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const deckRoutes = require('./routes/decks');

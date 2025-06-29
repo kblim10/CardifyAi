@@ -90,7 +90,16 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         routes: [{ name: 'Main' as any }],
       });
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Terjadi kesalahan saat registrasi';
+      let message = 'Terjadi kesalahan saat registrasi';
+      
+      if (error.message === 'Network Error') {
+        message = 'Tidak dapat terhubung ke server. Periksa koneksi internet dan pastikan backend berjalan.';
+      } else if (error.response?.data?.error) {
+        message = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        message = error.response.data.message;
+      }
+      
       Alert.alert('Registrasi Gagal', message);
     } finally {
       setLoading(false);
