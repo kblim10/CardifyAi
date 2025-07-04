@@ -52,8 +52,12 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log('Login attempt for email:', email);
+    console.log('Password provided:', !!password);
+
     // Validate email & password
     if (!email || !password) {
+      console.log('Missing email or password');
       return res.status(400).json({
         success: false,
         error: 'Masukkan email dan password',
@@ -62,8 +66,10 @@ exports.login = async (req, res) => {
 
     // Check for user
     const user = await User.findOne({ email }).select('+password');
+    console.log('User found:', !!user);
 
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(401).json({
         success: false,
         error: 'Kredensial tidak valid',
@@ -72,16 +78,20 @@ exports.login = async (req, res) => {
 
     // Check if password matches
     const isMatch = await user.matchPassword(password);
+    console.log('Password match:', isMatch);
 
     if (!isMatch) {
+      console.log('Password does not match for user:', email);
       return res.status(401).json({
         success: false,
         error: 'Kredensial tidak valid',
       });
     }
 
+    console.log('Login successful for user:', email);
     sendTokenResponse(user, 200, res);
   } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({
       success: false,
       error: 'Server Error',

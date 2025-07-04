@@ -121,8 +121,6 @@ export const ocrService = {
         const result = await this.processImageLocal(imagePath);
         return result.text;
       } catch (localError) {
-        console.log('Local OCR failed, trying remote:', localError);
-        
         // If local fails, try remote
         const result = await this.processImageRemote(imagePath);
         return result.text;

@@ -65,16 +65,13 @@ app.get('/', (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-}); 
-console.log('Checking environment variables:');
-console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
-console.log('JWT_EXPIRE exists:', !!process.env.JWT_EXPIRE);
-console.log('JWT_SECRET:', process.env.JWT_SECRET);
-console.log('JWT_EXPIRE:', process.env.JWT_EXPIRE);
-console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
-console.log('MONGODB_URI:', process.env.MONGODB_URI);
-console.log('PORT exists:', !!process.env.PORT);
-console.log('PORT:', process.env.PORT);
-console.log('NODE_ENV:', process.env.NODE_ENV);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 CardifyAi Backend Server`);
+  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔌 Port: ${PORT}`);
+  console.log(`🗄️  Database: MongoDB Atlas`);
+  console.log(`\nServer accessible on:`);
+  console.log(`  - http://localhost:${PORT}`);
+  console.log(`  - http://10.0.2.2:${PORT} (Android emulator)`);
+  console.log(`\n✅ Server ready for connections\n`);
+});

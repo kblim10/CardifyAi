@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { SafeAreaWrapper } from '../components/SafeAreaWrapper';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { decksAPI } from '../services/api';
@@ -185,8 +186,9 @@ const CreateDeckScreen: React.FC<CreateDeckScreenProps> = ({ route, navigation }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.formContainer}>
+    <SafeAreaWrapper>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <View style={styles.formContainer}>
         <Input
           label="Judul Deck"
           placeholder="Masukkan judul deck"
@@ -268,6 +270,7 @@ const CreateDeckScreen: React.FC<CreateDeckScreenProps> = ({ route, navigation }
         />
       </View>
     </ScrollView>
+    </SafeAreaWrapper>
   );
 };
 

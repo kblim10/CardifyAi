@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
+import { SafeAreaWrapper } from '../../components/SafeAreaWrapper';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { authAPI } from '../../services/api';
@@ -63,7 +64,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         routes: [{ name: 'Main' as any }],
       });
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Terjadi kesalahan saat login';
+      let message = 'Terjadi kesalahan saat login';
+      if (error.response?.data?.error) {
+        message = error.response.data.error;
+      } else if (error.message) {
+        message = error.message;
+      }
+      
       Alert.alert('Login Gagal', message);
     } finally {
       setLoading(false);
@@ -71,24 +78,25 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.appName}>CardifyAi</Text>
-          <Text style={styles.tagline}>
-            Belajar lebih efektif dengan flashcard dan AI
-          </Text>
-        </View>
+    <SafeAreaWrapper backgroundColor="#f8f9fa" statusBarStyle="dark-content">
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.appName}>CardifyAi</Text>
+            <Text style={styles.tagline}>
+              Belajar lebih efektif dengan flashcard dan AI
+            </Text>
+          </View>
 
         <View style={styles.formContainer}>
           <Input
@@ -130,6 +138,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaWrapper>
   );
 };
 
@@ -175,7 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginButton: {
-    marginBottom: 16,
+    marginBottom: 24,
   },
   registerContainer: {
     flexDirection: 'row',

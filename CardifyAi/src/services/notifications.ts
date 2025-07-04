@@ -10,22 +10,22 @@ class NotificationService {
 
   configure = () => {
     PushNotification.configure({
-      onRegister: function (token) {
-        console.log('TOKEN:', token);
+      onRegister: function (_token) {
+        // Token registered
       },
 
       onNotification: function (notification) {
-        console.log('NOTIFICATION:', notification);
         notification.finish(PushNotificationIOS.FetchResult.NoData);
       },
 
-      onAction: function (notification) {
-        console.log('ACTION:', notification.action);
-        console.log('NOTIFICATION:', notification);
+      onAction: function (_notification) {
+        // Handle notification action
       },
 
       onRegistrationError: function (err) {
-        console.error(err.message, err);
+        if (__DEV__) {
+          console.error('Push notification registration error:', err.message);
+        }
       },
 
       permissions: {
@@ -50,7 +50,7 @@ class NotificationService {
         importance: 4,
         vibrate: true,
       },
-      (created) => console.log(`Channel 'reminders' created: ${created}`)
+      (_created) => {} // Channel created callback
     );
 
     PushNotification.createChannel(
@@ -63,7 +63,7 @@ class NotificationService {
         importance: 3,
         vibrate: true,
       },
-      (created) => console.log(`Channel 'general' created: ${created}`)
+      (_created) => {} // Channel created callback
     );
   };
 

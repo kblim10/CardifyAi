@@ -17,7 +17,7 @@ class DatabaseService {
       });
 
       await this.createTables();
-      console.log('Database initialized successfully');
+      // Database initialized successfully
     } catch (error) {
       console.error('Database initialization error:', error);
       throw error;

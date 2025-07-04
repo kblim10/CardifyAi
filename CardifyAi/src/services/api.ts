@@ -7,26 +7,17 @@ const getApiUrl = () => {
   if (__DEV__) {
     // Development environment
     if (Platform.OS === 'android') {
-      // Multiple URLs to try for Android emulator
-      // Replace 192.168.1.100 with your actual computer IP address
-      // You can find it by running: ipconfig (Windows) or ifconfig (Mac/Linux)
-      return 'http://192.168.52.161:5000/api'; // Try your computer's IP first
-      // return 'http://10.0.2.2:5000/api'; // Android emulator default
-      // return 'http://localhost:5000/api'; // Last resort
+      return 'http://10.0.2.2:5000/api'; // Android emulator default
     } else {
       return 'http://localhost:5000/api'; // iOS simulator
     }
   } else {
-    // Production environment
-    return 'https://your-production-api.com/api';
+    // Production environment - Azure backend URL
+    return 'https://cardifyai.azurewebsites.net/api';
   }
 };
 
 const API_URL = getApiUrl();
-
-console.log('API_URL configured as:', API_URL);
-console.log('Platform:', Platform.OS);
-console.log('Dev mode:', __DEV__);
 
 // Create axios instance
 const api = axios.create({
@@ -61,8 +52,13 @@ api.interceptors.response.use(
     return response;
   },
   error => {
-    if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
-      console.error('Network connection failed. Make sure backend server is running on:', API_URL);
+    if (__DEV__) {
+      console.error('API Error:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        message: error.message
+      });
     }
     
     return Promise.reject(error);

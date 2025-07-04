@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { SafeAreaRoot } from './src/components/SafeAreaWrapper';
 import AppNavigator from './src/navigation/AppNavigator';
 import { storage } from './src/services/storage';
 
@@ -25,17 +26,21 @@ function App(): React.JSX.Element {
   if (!isInitialized) {
     // Show loading screen or splash screen
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      </SafeAreaView>
+      <SafeAreaRoot>
+        <SafeAreaView style={styles.loadingContainer}>
+          <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        </SafeAreaView>
+      </SafeAreaRoot>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <AppNavigator />
-    </SafeAreaView>
+    <SafeAreaRoot>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <AppNavigator />
+      </SafeAreaView>
+    </SafeAreaRoot>
   );
 }
 

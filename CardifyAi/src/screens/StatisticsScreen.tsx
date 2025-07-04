@@ -13,6 +13,7 @@ import { MainTabParamList } from '../navigation/AppNavigator';
 import { storage } from '../services/storage';
 import { getReviewStats } from '../services/srs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { SafeAreaWrapper } from '../components/SafeAreaWrapper';
 
 type StatisticsScreenProps = NativeStackScreenProps<MainTabParamList, 'Statistics'>;
 
@@ -112,20 +113,23 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200EE" />
-      </View>
+      <SafeAreaWrapper>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6200EE" />
+        </View>
+      </SafeAreaWrapper>
     );
   }
 
   return (
-    <ScrollView 
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
-    >
+    <SafeAreaWrapper>
+      <ScrollView 
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
       <Text style={styles.title}>Statistik Belajar</Text>
 
       {/* Overview */}
@@ -249,7 +253,8 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
           ))
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaWrapper>
   );
 };
 

@@ -16,6 +16,7 @@ import Input from '../components/Input';
 import { showSafeErrorAlert } from '../utils/helpers';
 import { storage } from '../services/storage';
 import { Card } from '../services/srs';
+import { SafeAreaWrapper } from '../components/SafeAreaWrapper';
 
 type CreateCardScreenProps = NativeStackScreenProps<MainStackParamList, 'CreateCard'>;
 
@@ -104,7 +105,8 @@ const CreateCardScreen: React.FC<CreateCardScreenProps> = ({ navigation, route }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <SafeAreaWrapper>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
         <Text style={styles.title}>Buat Kartu Baru</Text>
         <Text style={styles.subtitle}>
@@ -174,6 +176,7 @@ const CreateCardScreen: React.FC<CreateCardScreenProps> = ({ navigation, route }
         />
       </View>
     </ScrollView>
+    </SafeAreaWrapper>
   );
 };
 

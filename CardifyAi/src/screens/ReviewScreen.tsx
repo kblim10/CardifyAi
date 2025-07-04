@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { storage } from '../services/storage';
 import { cardsAPI } from '../services/api';
 import Card from '../components/Card';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { SafeAreaWrapper } from '../components/SafeAreaWrapper';
 
 type ReviewScreenProps = NativeStackScreenProps<RootStackParamList, 'Review'>;
 
@@ -33,9 +34,9 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ route, navigation }) => {
 
   useEffect(() => {
     loadDueCards();
-  }, [deckId]);
+  }, [deckId, loadDueCards]);
 
-  const loadDueCards = async () => {
+  const loadDueCards = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -65,7 +66,7 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ route, navigation }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [deckId]);
 
   const handleSwipeLeft = async () => {
     // Hard
@@ -129,102 +130,109 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ route, navigation }) => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200EE" />
-      </View>
+      <SafeAreaWrapper>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6200EE" />
+        </View>
+      </SafeAreaWrapper>
     );
   }
 
   if (cards.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Icon name="check-circle-outline" size={80} color="#4CAF50" />
-        <Text style={styles.emptyTitle}>Tidak Ada Kartu</Text>
-        <Text style={styles.emptySubtitle}>
-          Semua kartu sudah direview. Kembali lagi nanti.
-        </Text>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}>
-          <Text style={styles.backButtonText}>Kembali</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaWrapper>
+        <View style={styles.emptyContainer}>
+          <Icon name="check-circle-outline" size={80} color="#4CAF50" />
+          <Text style={styles.emptyTitle}>Tidak Ada Kartu</Text>
+          <Text style={styles.emptySubtitle}>
+            Semua kartu sudah direview. Kembali lagi nanti.
+          </Text>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}>
+            <Text style={styles.backButtonText}>Kembali</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaWrapper>
     );
   }
 
   if (reviewComplete) {
     return (
-      <View style={styles.completeContainer}>
-        <Icon name="check-circle" size={80} color="#4CAF50" />
-        <Text style={styles.completeTitle}>Review Selesai!</Text>
-        <Text style={styles.completeSubtitle}>
-          Anda telah menyelesaikan semua kartu yang jatuh tempo.
-        </Text>
-        
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.total}</Text>
-            <Text style={styles.statLabel}>Total</Text>
+      <SafeAreaWrapper>
+        <View style={styles.completeContainer}>
+          <Icon name="check-circle" size={80} color="#4CAF50" />
+          <Text style={styles.completeTitle}>Review Selesai!</Text>
+          <Text style={styles.completeSubtitle}>
+            Anda telah menyelesaikan semua kartu yang jatuh tempo.
+          </Text>
+          
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{stats.total}</Text>
+              <Text style={styles.statLabel}>Total</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{stats.easy}</Text>
+              <Text style={[styles.statLabel, styles.easyLabel]}>Mudah</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{stats.hard}</Text>
+              <Text style={[styles.statLabel, styles.hardLabel]}>Sulit</Text>
+            </View>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.easy}</Text>
-            <Text style={[styles.statLabel, { color: '#4CAF50' }]}>Mudah</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.hard}</Text>
-            <Text style={[styles.statLabel, { color: '#FF5252' }]}>Sulit</Text>
-          </View>
+          
+          <TouchableOpacity
+            style={styles.finishButton}
+            onPress={handleFinishReview}>
+            <Text style={styles.finishButtonText}>Selesai</Text>
+          </TouchableOpacity>
         </View>
-        
-        <TouchableOpacity
-          style={styles.finishButton}
-          onPress={handleFinishReview}>
-          <Text style={styles.finishButtonText}>Selesai</Text>
-        </TouchableOpacity>
-      </View>
+      </SafeAreaWrapper>
     );
   }
 
   const currentCard = cards[currentCardIndex];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => navigation.goBack()}>
-          <Icon name="close" size={24} color="#333333" />
-        </TouchableOpacity>
-        <Text style={styles.progress}>
-          {currentCardIndex + 1} / {cards.length}
-        </Text>
-      </View>
+    <SafeAreaWrapper>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => navigation.goBack()}>
+            <Icon name="close" size={24} color="#333333" />
+          </TouchableOpacity>
+          <Text style={styles.progress}>
+            {currentCardIndex + 1} / {cards.length}
+          </Text>
+        </View>
 
-      <View style={styles.cardContainer}>
-        <Card
-          frontContent={currentCard.frontContent}
-          backContent={currentCard.backContent}
-          mediaPath={currentCard.mediaPath}
-          onSwipeLeft={handleSwipeLeft}
-          onSwipeRight={handleSwipeRight}
-        />
-      </View>
+        <View style={styles.cardContainer}>
+          <Card
+            card={currentCard}
+            onSwipeLeft={handleSwipeLeft}
+            onSwipeRight={handleSwipeRight}
+          />
+        </View>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.hardButton]}
-          onPress={handleSwipeLeft}>
-          <Icon name="thumb-down" size={24} color="#FFFFFF" />
-          <Text style={styles.actionButtonText}>Sulit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.easyButton]}
-          onPress={handleSwipeRight}>
-          <Icon name="thumb-up" size={24} color="#FFFFFF" />
-          <Text style={styles.actionButtonText}>Mudah</Text>
-        </TouchableOpacity>
+        <View style={styles.controls}>
+          <TouchableOpacity
+            style={[styles.controlButton, styles.hardButton]}
+            onPress={handleSwipeLeft}>
+            <Icon name="thumb-down" size={24} color="#FFFFFF" />
+            <Text style={styles.controlButtonText}>Sulit</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.controlButton, styles.easyButton]}
+            onPress={handleSwipeRight}>
+            <Icon name="thumb-up" size={24} color="#FFFFFF" />
+            <Text style={styles.controlButtonText}>Mudah</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </SafeAreaWrapper>
   );
 };
 
@@ -249,28 +257,28 @@ const styles = StyleSheet.create({
   },
   progress: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#333333',
   },
   cardContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     padding: 16,
   },
-  actionButton: {
+  controls: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 16,
+    paddingBottom: 32,
+  },
+  controlButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
     paddingHorizontal: 24,
+    paddingVertical: 12,
     borderRadius: 8,
-    flex: 1,
-    marginHorizontal: 8,
+    gap: 8,
   },
   hardButton: {
     backgroundColor: '#FF5252',
@@ -278,73 +286,71 @@ const styles = StyleSheet.create({
   easyButton: {
     backgroundColor: '#4CAF50',
   },
-  actionButtonText: {
+  controlButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
     fontSize: 16,
-    marginLeft: 8,
+    fontWeight: '600',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
   },
   emptyTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333333',
     marginTop: 16,
+    marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 16,
     color: '#666666',
     textAlign: 'center',
-    marginTop: 8,
     marginBottom: 24,
   },
   backButton: {
     backgroundColor: '#6200EE',
-    paddingVertical: 12,
     paddingHorizontal: 24,
+    paddingVertical: 12,
     borderRadius: 8,
   },
   backButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontWeight: '600',
   },
   completeContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#FFFFFF',
+    padding: 16,
   },
   completeTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333333',
     marginTop: 16,
+    marginBottom: 8,
   },
   completeSubtitle: {
     fontSize: 16,
     color: '#666666',
     textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 24,
+    marginBottom: 32,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    marginVertical: 24,
+    marginBottom: 32,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#333333',
   },
@@ -353,18 +359,23 @@ const styles = StyleSheet.create({
     color: '#666666',
     marginTop: 4,
   },
+  easyLabel: {
+    color: '#4CAF50',
+  },
+  hardLabel: {
+    color: '#FF5252',
+  },
   finishButton: {
     backgroundColor: '#6200EE',
-    paddingVertical: 12,
     paddingHorizontal: 32,
+    paddingVertical: 16,
     borderRadius: 8,
-    marginTop: 16,
   },
   finishButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontWeight: '600',
   },
 });
 
-export default ReviewScreen; 
+export default ReviewScreen;

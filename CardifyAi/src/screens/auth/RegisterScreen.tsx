@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/AppNavigator';
+import { SafeAreaWrapper } from '../../components/SafeAreaWrapper';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { authAPI } from '../../services/api';
@@ -107,19 +108,20 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>Buat Akun</Text>
-          <Text style={styles.headerSubtitle}>
-            Daftar untuk mulai belajar dengan flashcard dan AI
-          </Text>
-        </View>
+    <SafeAreaWrapper backgroundColor="#f8f9fa" statusBarStyle="dark-content">
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerTitle}>Buat Akun</Text>
+            <Text style={styles.headerSubtitle}>
+              Daftar untuk mulai belajar dengan flashcard dan AI
+            </Text>
+          </View>
 
         <View style={styles.formContainer}>
           <Input
@@ -174,6 +176,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaWrapper>
   );
 };
 

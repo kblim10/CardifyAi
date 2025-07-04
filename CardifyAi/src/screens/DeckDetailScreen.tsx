@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { SafeAreaWrapper } from '../components/SafeAreaWrapper';
 import { Card } from '../services/srs';
 import { Deck } from '../services/storage';
 import { cardsAPI, decksAPI } from '../services/api';
@@ -29,9 +30,6 @@ const DeckDetailScreen: React.FC<DeckDetailScreenProps> = ({ route, navigation }
   const [dueCardCount, setDueCardCount] = useState(0);
 
   useEffect(() => {
-    // Debug log
-    console.log('DeckDetailScreen received deckId:', deckId);
-    
     // Check if deckId is valid
     if (!deckId || deckId === 'undefined') {
       Alert.alert('Error', 'ID deck tidak valid');
@@ -170,14 +168,17 @@ const DeckDetailScreen: React.FC<DeckDetailScreenProps> = ({ route, navigation }
 
   if (loading && !refreshing && !deck) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200EE" />
-      </View>
+      <SafeAreaWrapper>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6200EE" />
+        </View>
+      </SafeAreaWrapper>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaWrapper>
+      <View style={styles.container}>
       {/* Deck Header */}
       <View style={styles.deckHeader}>
         <View style={styles.deckInfo}>
@@ -251,6 +252,7 @@ const DeckDetailScreen: React.FC<DeckDetailScreenProps> = ({ route, navigation }
         <Text style={styles.deleteText}>Hapus Deck</Text>
       </TouchableOpacity>
     </View>
+    </SafeAreaWrapper>
   );
 };
 

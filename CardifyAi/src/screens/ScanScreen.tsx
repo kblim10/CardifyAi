@@ -17,6 +17,7 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { ocrService } from '../services/ocr';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { showSafeErrorAlert } from '../utils/helpers';
+import { SafeAreaWrapper } from '../components/SafeAreaWrapper';
 
 type ScanScreenProps = NativeStackScreenProps<RootStackParamList, 'Scan'>;
 
@@ -132,7 +133,8 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <SafeAreaWrapper>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
         <Text style={styles.title}>Scan Dokumen atau Gambar</Text>
         <Text style={styles.subtitle}>
@@ -210,6 +212,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
         </View>
       )}
     </ScrollView>
+    </SafeAreaWrapper>
   );
 };
 

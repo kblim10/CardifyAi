@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../navigation/AppNavigator';
+import { SafeAreaWrapper } from '../components/SafeAreaWrapper';
 import DeckCard from '../components/DeckCard';
 import Button from '../components/Button';
 import { Deck } from '../services/storage';
@@ -39,6 +40,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
+  const handleDeckPress = (deckId: string) => {
+    navigation.navigate('DeckDetail', { deckId });
+  };
+
   const loadUserData = async () => {
     const userData = await storage.getUser();
     setUser(userData);
@@ -47,11 +52,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const loadDecks = async () => {
     try {
       setLoading(true);
-      
-      // Debug: Check if token exists
-      const token = await storage.getToken();
-      console.log('Token exists:', !!token);
-      console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
       // Try to get decks from API
       try {
@@ -62,23 +62,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         // Save decks to local storage
         await storage.saveDecks(apiDecks);
         
-        // Debug: Log deck data
-        console.log('API Decks loaded:', apiDecks.length);
-        if (apiDecks.length > 0) {
-          console.log('First deck:', JSON.stringify(apiDecks[0], null, 2));
-        }
-        
         // Update state
         setDecks(apiDecks);
       } catch (apiError) {
-        console.log('Failed to fetch from API, using local data', apiError);
-        
         // If API fails, load from local storage
         const localDecks = await storage.getDecks();
-        console.log('Local Decks loaded:', localDecks.length);
-        if (localDecks.length > 0) {
-          console.log('First local deck:', JSON.stringify(localDecks[0], null, 2));
-        }
         setDecks(localDecks);
       }
       
@@ -120,11 +108,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     loadDecks();
   };
 
-  const handleDeckPress = (deckId: string) => {
-    console.log('Navigating to DeckDetail with deckId:', deckId);
-    navigation.navigate('DeckDetail' as any, { deckId });
-  };
-
   const handleCreateDeck = () => {
     navigation.navigate('CreateDeck' as any);
   };
@@ -142,63 +125,67 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200EE" />
-      </View>
+      <SafeAreaWrapper>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6200EE" />
+        </View>
+      </SafeAreaWrapper>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>
-            Halo, {user?.name || 'Pengguna'}!
-          </Text>
-          <Text style={styles.subTitle}>Apa yang ingin kamu pelajari hari ini?</Text>
-        </View>
-        <TouchableOpacity style={styles.scanButton} onPress={() => navigation.navigate('Scan' as any)}>
-          <Icon name="camera" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
-
-      {decks.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Icon name="cards-outline" size={80} color="#CCCCCC" />
-          <Text style={styles.emptyText}>Belum ada deck</Text>
-          <Text style={styles.emptySubText}>
-            Mulai buat deck untuk menyimpan flashcard Anda
-          </Text>
-          <Button
-            title="Buat Deck Baru"
-            onPress={handleCreateDeck}
-            style={styles.createDeckButton}
-          />
-        </View>
-      ) : (
-        <>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Deck Saya</Text>
-            <TouchableOpacity onPress={handleCreateDeck}>
-              <Text style={styles.seeAllText}>+ Buat Baru</Text>
-            </TouchableOpacity>
+    <SafeAreaWrapper>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.welcomeText}>
+              Halo, {user?.name || 'Pengguna'}!
+            </Text>
+            <Text style={styles.subTitle}>Apa yang ingin kamu pelajari hari ini?</Text>
           </View>
+          <TouchableOpacity style={styles.scanButton} onPress={() => navigation.navigate('Scan' as any)}>
+            <Icon name="camera" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
 
-          <FlatList
-            data={decks}
-            renderItem={renderDeckItem}
-            keyExtractor={item => item.id}
-            numColumns={2}
-            columnWrapperStyle={styles.deckRow}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-            }
-            contentContainerStyle={styles.deckList}
-          />
-        </>
-      )}
-    </View>
+        {decks.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Icon name="cards-outline" size={80} color="#CCCCCC" />
+            <Text style={styles.emptyText}>Belum ada deck</Text>
+            <Text style={styles.emptySubText}>
+              Mulai buat deck untuk menyimpan flashcard Anda
+            </Text>
+            <Button
+              title="Buat Deck Baru"
+              onPress={handleCreateDeck}
+              style={styles.createDeckButton}
+            />
+          </View>
+        ) : (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Deck Saya</Text>
+              <TouchableOpacity onPress={handleCreateDeck}>
+                <Text style={styles.seeAllText}>+ Buat Baru</Text>
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={decks}
+              renderItem={renderDeckItem}
+              keyExtractor={item => item.id}
+              numColumns={2}
+              columnWrapperStyle={styles.deckRow}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+              }
+              contentContainerStyle={styles.deckList}
+            />
+          </>
+        )}
+      </View>
+    </SafeAreaWrapper>
   );
 };
 

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../navigation/AppNavigator';
+import { SafeAreaWrapper } from '../components/SafeAreaWrapper';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { authAPI } from '../services/api';
